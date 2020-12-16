@@ -7,7 +7,7 @@ import { loadBundle }         from './lib/load'
 import { SomethingWentWrong } from './SomethingWentWrong'
 import React                  from 'react'
 
-export interface MicroAppProps {
+export interface ExternalMicroAppProps {
   name: string
   cssFile?: string
   jsFile: string
@@ -17,21 +17,30 @@ export interface MicroAppProps {
   loading?: FC
 }
 
-export const ExternallyLoaded = ({ cssFile, jsFile, name, pageNotFound, loading, somethingWentWrong, ...rest }: MicroAppProps & any) => {
+export interface LocalMicroAppProps {
+  name: string
+  importPromise: Promise<any>
+  baseRoute?: string
+  pageNotFound?: FC
+  somethingWentWrong?: FC
+  loading?: FC
+}
+
+export const ExternallyLoaded = ({ cssFile, jsFile, name, pageNotFound, loading, somethingWentWrong, ...rest }: ExternalMicroAppProps & any) => {
   const Loadable = loadable({
     loader : () => loadBundle(name, cssFile, jsFile, pageNotFound || PageNotFound),
     loading: loading || Loading
   })
   return <Loadable {...rest} />
 }
-export const LazyLoaded       = ({ name, jsFile, pageNotFound, loading, somethingWentWrong, ...rest }: MicroAppProps & any) => {
-  const Loadable = lazy(() => import(jsFile).catch(e => ({ default: pageNotFound || PageNotFound })))
+export const LazyLoaded       = ({ name, importPromise, pageNotFound, loading, somethingWentWrong, ...rest }: LocalMicroAppProps & any) => {
+  const Loadable = lazy(() => importPromise.catch(e => ({ default: pageNotFound || PageNotFound })))
   const Loader   = loading || Loading
   return <Suspense fallback={<Loader/>}><Loadable {...rest} /></Suspense>
 }
-const MicroApp                = (props: MicroAppProps & any) => {
+const MicroApp                = (props: (ExternalMicroAppProps | LocalMicroAppProps) & any) => {
   return <ErrorBoundary name={props.name} fallback={props.somethingWentWrong || SomethingWentWrong}>
-    {process.env.REACT_APP_DEV ? <LazyLoaded  {...props} /> : <ExternallyLoaded  {...props} />}
+    {props.hasOwnProperty('importPromise') ? <LazyLoaded  {...props} /> : <ExternallyLoaded  {...props} />}
   </ErrorBoundary>
 }
 
