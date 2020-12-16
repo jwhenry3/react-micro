@@ -18,6 +18,7 @@ export const loadJS     = (url: string, name: string) => {
   return promise.then(() => {
     return global[name].default
   }).catch((e) => {
+    console.log('Could Not Load Resources for Micro Client', name, e)
     document.body.removeChild(existing || script)
     throw e
   })
@@ -38,6 +39,7 @@ export const loadCSS    = (url: string, name: string) => {
     link.href    = url
     document.head.appendChild(link)
   }).catch((e) => {
+    console.log('Could Not Load Resources for Micro Client', name, e)
     document.head.removeChild(existing || link)
     throw e
   })
