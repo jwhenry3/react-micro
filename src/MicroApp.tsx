@@ -19,7 +19,7 @@ export interface ExternalMicroAppProps {
 
 export interface LocalMicroAppProps {
   name: string
-  importPromise: Promise<any>
+  lazyLoad: () => Promise<any>
   baseRoute?: string
   pageNotFound?: FC
   somethingWentWrong?: FC
@@ -33,14 +33,14 @@ export const ExternallyLoaded = ({ cssFile, jsFile, name, pageNotFound, loading,
   })
   return <Loadable {...rest} />
 }
-export const LazyLoaded       = ({ name, importPromise, pageNotFound, loading, somethingWentWrong, ...rest }: LocalMicroAppProps & any) => {
-  const Loadable = lazy(() => importPromise.catch(e => ({ default: pageNotFound || PageNotFound })))
+export const LazyLoaded       = ({ name, lazyLoad, pageNotFound, loading, somethingWentWrong, ...rest }: LocalMicroAppProps & any) => {
+  const Loadable = lazy(() => lazyLoad().catch((e: any) => ({ default: pageNotFound || PageNotFound })))
   const Loader   = loading || Loading
   return <Suspense fallback={<Loader/>}><Loadable {...rest} /></Suspense>
 }
 const MicroApp                = (props: (ExternalMicroAppProps | LocalMicroAppProps) & any) => {
   return <ErrorBoundary name={props.name} fallback={props.somethingWentWrong || SomethingWentWrong}>
-    {props.hasOwnProperty('importPromise') ? <LazyLoaded  {...props} /> : <ExternallyLoaded  {...props} />}
+    {props.hasOwnProperty('lazyLoad') ? <LazyLoaded  {...props} /> : <ExternallyLoaded  {...props} />}
   </ErrorBoundary>
 }
 
