@@ -50,7 +50,7 @@ export const loadBundle = async (name: string, cssFile: string, jsFile: string, 
     }
     return await loadJS(jsFile, name)
   } catch (e) {
-    console.log('Could Not Load Resources for Micro Client', name, e)
+    console.log('Could Not Load Resources for Micro App', name, e)
     return fallback
   }
 }
