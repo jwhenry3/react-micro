@@ -1,30 +1,29 @@
 import { FC } from 'react'
 
 export const loadJS     = (url: string, name: string) => {
-  const existing = document.getElementById(name)
+  const existing = document.getElementById(name + '-script')
   const script   = document.createElement('script')
   const promise  = new Promise((resolve, reject) => {
     if (existing) {
-      resolve(null)
+      resolve(existing)
       return
     }
     script.onerror = reject
     script.onload  = resolve
     script.async   = true
     script.src     = url
-    script.id      = name
+    script.id      = name + '-script'
     document.body.appendChild(script)
   })
   return promise.then(() => {
     return global[name].default
   }).catch((e) => {
-    console.log('Could Not Load Resources for Micro Client', name, e)
     document.body.removeChild(existing || script)
     throw e
   })
 }
 export const loadCSS    = (url: string, name: string) => {
-  const existing = document.getElementById(name)
+  const existing = document.getElementById(name + '-styles')
   const link     = document.createElement('link')
   return new Promise((resolve, reject) => {
     if (existing) {
@@ -35,11 +34,10 @@ export const loadCSS    = (url: string, name: string) => {
     link.onload  = resolve
     link.rel     = 'stylesheet'
     link.type    = 'text/css'
-    link.id      = name
+    link.id      = name + '-styles'
     link.href    = url
     document.head.appendChild(link)
   }).catch((e) => {
-    console.log('Could Not Load Resources for Micro Client', name, e)
     document.head.removeChild(existing || link)
     throw e
   })
